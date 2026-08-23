@@ -3,6 +3,8 @@ import random
 import tkinter as tk
 from collections import deque
 
+from agent import SearchAgent
+
 
 class VisualGridHuntGame:
     """A flexible Pacman-style grid environment with support for configurable opponents and larger scales."""
@@ -210,6 +212,12 @@ class GridGameGUI:
             num_opponents=num_opponents,
             custom_walls=walls,
         )
+
+        # Step 1.3: Inject the SearchAgent (running A*) instead of a
+        # ModelBasedAgent / the environment's built-in BFS pathfinder.
+        self.agent = SearchAgent()
+        self.agent.active_algo = "AStar"  # 'BFS', 'DFS', 'UCS', or 'AStar'
+        self.agent.heuristic_type = "manhattan"  # 'manhattan' or 'euclidean'
 
         # Dynamically calculate cell sizes
         max_canvas_dim = 600
@@ -569,7 +577,8 @@ class GridGameGUI:
         def step():
             if not self.env.is_done():
 
-                action = self.env.find_next_action()
+                percept = self.env.get_percept()
+                action = self.agent.sense_and_act(percept)
                 self.env.execute_action(action)
 
                 self.draw_grid()
